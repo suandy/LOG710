@@ -392,7 +392,7 @@ int main( )
 ```
 #### Exercice 03
 On considère `N` processus qui communiquent au moyen de tubes de communication anonymes (temporaires) (unnamed pipe). Chaque processus partage 2 tubes: un avec le processus de droite et un autre avec le processus de gauche. La figure suivante montre l'architecture de communication pour le cas de N=4 processus.
-[exercice 03](images/cours3/exercice3.png)
+![exercice 03](images/cours3/exercice3.png)
 Écrire un code qui implémente cette architecture de communication des `N` processus créés. Le processus initial qui résulte de l'exécution de main crée les `N` processus (N=4). L'entrée standard et la sortie standard de chaque processus `Pi` sont redirigées vers les tubes voisins correspondants. L'entrée et la sortie standards du processus `P0` deviennent respectivement la sortie et l'entrée des tubes `tub3` et `tub0`. On suppose que chaque processus exécute comme traitement une fonction `proc(i)` avec `i` le numéro du processus. Vous n'avez pas à écrire le code de `proc`.
 ##### Réponse
 ```c
