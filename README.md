@@ -120,7 +120,9 @@ a) Quel est le nombre de processus créés par l'instruction suivante?
 b) Donnez l'arborescence des processus.
 ##### Réponse
 a) 08 processus
+
 b)
+
 ![exercice 4b](images/cours2/exercice4.png)
 
 #### Exercice 05
@@ -261,7 +263,7 @@ void *find_min(void *list_ptr) {
 
   int *local_ptr, i;
 
-    local_ptr = (int *) list_ptr;
+    local_ptr = (int*) list_ptr;
 
   for (i = 0; i < partition_size; i++)
         if (local_ptr[i] < min){
@@ -274,5 +276,184 @@ void *find_min(void *list_ptr) {
 ```
 
 ## Cours 3
+### Exercice
+#### Exercice 01
+Le signal `SIGCHILD` est automatiquement envoyé par un processus fils à un processus père lorsque le fils se termine (par un exit, un return ou autre). Compléter le code suivant en écrivant un gestionnaire de signal adéquat pour que le père n'attende jamais son fils de façon bloquante et que le fils ne devienne pas zombie.
+```c
+/* 0 */
+int main(int argc, char *argv[])
+{
+  /* 1 */
+  if(!fork())
+  {
+    /* 2 */
+    for(int i=0; i<10; i++) // simule un petit calcul
+    /* 3 */
+    exit(1);
+    /* 4 */
+  }
+  /* 5 */
+  while(1) // simule un calcul infini
+  /* 6 */
+}
+```
+##### Réponse
+```c
+/* 0 */
+void handler(int sig){
+	if (sig == SIGCHLD) {
+	   wait(NULL);
+	   if (!(pid2=fork()))
+	   	{ printf("Je suis le processu fils 2. Mon pid est %d\n", getpid());
+	   		exit(1) ; /*4*/
+	    }
+	}
+}
+int main(int argc, char *argv[])
+{
+  /*1*/
+	signal(SIGCHLD, handler);
+	if (!fork())
+	{
+    printf("Je suis le processus fils 1. Mon pid est : %d\n",getpid());
+    /*2*/
+		for (int i = 0 ; i <10 ; i++) ;
+		//simule un certain calcul
+    /*3*/
+		exit(1) ;
+    /*4*/
+	}
+	/*5*/
+	waitpid(pid2, NULL);
+	while(1) ; //Simule un calcul infini
+  /*6*/
+}
+```
+#### Exercice 02
+On considère le code suivant:
+```c
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <signal.h>
+#define N 5
+/* 0 */
+int main()
+{
+  pid_t pid[N];
+  int i;
+  /* 1 */
+  for(i=0; i<N; i++)
+  {
+    if((pid[i]=fork()) == 0)
+    {
+      /* 2 */
+      while(1)
+      {
+        printf("ici fils %d", i);
+        /* 2 */
+      }
+    }
+    /* 3 */
+  }
+}
+```
+Compléter ce code pour implémenter le comportement suivant: Un processus père utilise les signaux `SIGSTOP` et `SIGCONT` pour suspendre(bloquer) et reprendre (débloquer) l'exécution de ses processus fils. Initialement, tous les processus fils crées doivent se mettre en pause. Le processus père répète continuellement le traitement suivant en commençant par le premier fils : il envoie le signal `SIGCONT` au fils suivant (le fils suivant du dernier est le premier). Lorsqu'un processus fils reçoit le signal `SIGCONT`, il affiche le message indiquant qu'il a capturé le signal `SIGCONT` avant de poursuivre son exécution. Les processus fils doivent utiliser les appels systèmes `pause()` ou `sleep(v)` pour attendre un signal de la part du processus père.
+##### Réponse
+```c
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include<stdio.h>
+#include <signal.h>
+#define N 5
+/*0*/
+void action(int signum) {
+	printf("capture de SIGCONT %d\n", getpid());
+}
+int main( )
+{ pid_t pid[N];
+  int i ;
+  /*1*/ signal(SIGCONT,action);
+  for ( i=0; i<N;i++)
+   if ((pid[i]=fork())==0)
+    { /*2*/pause() ;
+      while(1) {
+        printf("ici fils %d de pid %d \n", i, getpid());
+        pause(); //sleep(1);
+      }
+    }
+  /*3*/
+  while (1)
+    for(i=0; i<N;i++)
+      { kill(pid[i], SIGCONT); sleep(1); kill(pid[i], SIGSTOP); }
+}
+```
+#### Exercice 03
+On considère `N` processus qui communiquent au moyen de tubes de communication anonymes (temporaires) (unnamed pipe). Chaque processus partage 2 tubes: un avec le processus de droite et un autre avec le processus de gauche. La figure suivante montre l'architecture de communication pour le cas de N=4 processus.
+[exercice 03](images/cours3/exercice3.png)
+Écrire un code qui implémente cette architecture de communication des `N` processus créés. Le processus initial qui résulte de l'exécution de main crée les `N` processus (N=4). L'entrée standard et la sortie standard de chaque processus `Pi` sont redirigées vers les tubes voisins correspondants. L'entrée et la sortie standards du processus `P0` deviennent respectivement la sortie et l'entrée des tubes `tub3` et `tub0`. On suppose que chaque processus exécute comme traitement une fonction `proc(i)` avec `i` le numéro du processus. Vous n'avez pas à écrire le code de `proc`.
+##### Réponse
+```c
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <stdlib.h>
+#define N 4
+#define BUFFER_SIZE 100
 
+char msg[BUFFER_SIZE];
+
+void proc( int );
+
+int main ()
+{
+	int i,j ;
+
+	int fd[N][2];
+
+	for(i=0; i<N; i++){
+		pipe(fd[i]);
+	}
+
+	for(i=0; i<N; i++){
+		if (fork() == 0)
+		{
+			dup2(fd[i][1],1);
+			dup2(fd[(N+i-1)%N][0],0);  //dup2(fd[(N+i-1)%N][0],0);
+			for(j=0 ; j < N; j++)
+			{
+				close(fd[j][0]);
+				close(fd[j][1]);
+			}
+			sleep(i);
+			proc(i);
+			exit(0);
+		}
+	}
+	exit(0);
+}
+// Code de la function proc
+void proc(int x)
+{
+	// printf("Je suis le procesus P%d \n", getpid());
+
+	if (x==0){
+		//write(1,"Hello this me!", 15);
+		printf("Hello_this_me!\n");
+	}
+	else if (x!=3) {
+		scanf("%s", msg);
+		printf("%s", msg);
+	}
+	else {
+		scanf("%s", msg);
+		fprintf(stderr,"%s\n", msg);
+		fflush(stderr);
+	}
+	fflush(stdout);
+}
+```
 ## Cours 4
