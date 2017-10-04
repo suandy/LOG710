@@ -1,11 +1,14 @@
 # LOG710
+
 ## Cours 1
 ### Système d'exploitation
 Un logiciel qui agit comme intermédiaire entre l'utilisateur et le matériel d'un ordinateur.
+
 ### Objectifs d'un OS
 1. Fournir un environnement d'exécution pour les programmes.
 2. Rendre un système plus facile à utiliser.
 3. Utiliser le matériel de l'ordinateur plus efficacement.
+
 ### Mécanisme des interruptions
 * L'OS est responsable de la gestion du matériel composant le système informatique.
 * Le CPU doit communiquer avec des périphériques externes.
@@ -14,17 +17,45 @@ Un logiciel qui agit comme intermédiaire entre l'utilisateur et le matériel d'
 * Comment le CPU peut être capable de traiter les évènements générés par les périphériques externes et répondre
 rapidement?
 * Comment le CPU peut faire du travail utile en attendant ces évènement?
+
 #### Scrutement (polling)
 |Fonctionnement|Avantage|Inconvénients|
 |---|---|---|
-|Aller vérifier l'état des périphériques (s'ils ont des requêtes?, terminé?) de temps en temps| Simple | 1. Prends du temps de la CPU même s'il n'y a pas de requêtes |
-| | |2. Quand faire le polling? Difficile à prédire.|
+|Aller vérifier l'état des périphériques (s'ils ont des requêtes?, terminé?) de temps en temps| Simple | 1. Prends du temps de la CPU même s'il n'y a pas de requêtes 2. Quand faire le polling? Difficile à prédire.|
+
+
 #### Interruption
 |Fonctionnement|
 |---|
 |Chaque périphérique peut envoyer un signal à la CPU pour indiquer un évènement (requête)|
 |Pas de coûts d'interrogation des périphériques lorsqu'il n'y a pas de requêtes|
-|Réponse plus rapide|
+|Réponse plus rapide|   |   |
+##### Interruption non-masquable
+Réservé pour les évènements du type non récupérable.
+##### Interruption masquable
+Il peut être désactivé par le CPU avant l'exécution d'une instruction critique afin de désactiver l'interruption. Utilisé principalement dans les contrôleurs de requête de service.
+### Interface utilisateur
+#### Interface utilisateur en ligne de comande (CLI)
+Utilise des commandes en texte et une méthode d'entrée
+#### Interface en batch
+Des commandes sont préconfiguré dans un fichier spécifique et ce fichier est appelé.
+#### Interface graphique de l'utilisateur (GUI)
+Une interface sous forme de fenêtre habituellement avec un pointeur(souris) pour diriger les entrées et les sorties.
+
+### Programme d'exécution
+Un système doit être en mesure de charger un programme dans la mémoire et rouler ce programme. Doit aussi être apte à arrêter l'exécution normalement ou anormalement avec une indication d'erreur.
+
+### Interpréteur de commandes
+Un exemple d'un interpréteur est `shells` dans des systèmes UNIX et Linux. La fonction principale d'un interpréteur est l'exécution de la prochaine commande spécifié par l'usager. Plusieur de ces fonctions est la manipulation des fichiers tels que la création, destruction des fichiers. L'interpréteur détient à lui un répertoire dans laquel il cherche les commandes pour l'exécution des tâches. Une alternative est de chercher l'implémentation des commandes requis dans les fichiers des programme du systèmes.
+
+### Appels du système
+Fourni une interface au système disponible par le OS. Ces appels sont généralement écrit en `C`, `C++`. Pour les appels aux composants matériel directement, le langage utilisé est en assembleur.
+
+### Loi de Kernighan
+Debugging est doublement plus difficile que d'écrire le code. Cependant, si tu écris du code intelligemment, tu es par définition, pas assez intelligent pour le debug.
+
+
+
 ## Cours 2
 ### Exercice
 #### Exercice 01
