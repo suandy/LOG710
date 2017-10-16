@@ -1,30 +1,95 @@
 # LOG710
 
 ## Cours 1
-### Système d'exploitation
-Un logiciel qui agit comme intermédiaire entre l'utilisateur et le matériel d'un ordinateur.
+### Section 1.5
+#### Système d'opération système (OS)
 
-### Objectifs d'un OS
+##### Système d'exploitation
+Un logiciel qui agit comme intermédiaire entre l'utilisateur et le matériel d'un ordinateur. Les systèmes d'opération moderne sont `interrupt driven`. Il attend toujours des commandes si aucun processus ne requiert d'être exécuté, entrée/sortie à rendre service et aucun usager à répondre.
+
+##### Objectifs d'un OS
 1. Fournir un environnement d'exécution pour les programmes.
 2. Rendre un système plus facile à utiliser.
 3. Utiliser le matériel de l'ordinateur plus efficacement.
 
-### Mécanisme des interruptions
-* L'OS est responsable de la gestion du matériel composant le système informatique.
-* Le CPU doit communiquer avec des périphériques externes.
-    * asynchrones (ayant des cycles d'horloges différents)
-    * beacoup moins rapide
-* Comment le CPU peut être capable de traiter les évènements générés par les périphériques externes et répondre
-rapidement?
-* Comment le CPU peut faire du travail utile en attendant ces évènement?
+##### Exception (trap)
+Généré par un logiciel qui est causé par une erreur ou par une requête d'un service au OS d'un programme de l'usager.
 
-#### Scrutement (polling)
+##### Modes d'opération
+1. Kernel (mode 0)
+2. Usager (mode 1)
+3. 3eme mode utilisé pour le virtual machine manager (VMM)
+    - Intermédiaire entre le kernel et usager. Nécessite les privilèges pour la création des machines virtuelles.
+
+##### Timer
+Peut être utilisé pour interrompre l'ordinateur après un certain temps afin d'éviter qu'une application roule pendant trop longtemps. On peut aussi avoir un timer variable avec l'aide de l'horloge et d'un compteur.
+
+### Chapitre 2
+#### Interface utilisateur
+###### Interface utilisateur en ligne de comande (CLI)
+Utilise des commandes en texte et une méthode d'entrée.
+###### Interface en batch
+Des commandes sont préconfiguré dans un fichier spécifique et ce fichier est appelé.
+###### Interface graphique de l'utilisateur (GUI)
+Une interface sous forme de fenêtre habituellement avec un pointeur(souris) pour diriger les entrées et les sorties.
+
+#### Programme d'exécution
+Un système doit être en mesure de charger un programme dans la mémoire et rouler ce programme. Doit aussi être apte à arrêter l'exécution normalement ou anormalement avec une indication d'erreur.
+
+#### Interpréteur de commandes
+Un exemple d'un interpréteur est `shells` dans des systèmes UNIX et Linux. La fonction principale d'un interpréteur est l'exécution de la prochaine commande spécifié par l'usager. Plusieur de ces fonctions est la manipulation des fichiers tels que la création, destruction des fichiers. L'interpréteur détient à lui un répertoire dans laquel il cherche les commandes pour l'exécution des tâches. Une alternative est de chercher l'implémentation des commandes requis dans les fichiers des programme du systèmes.
+
+#### Appels du système
+Fourni une interface au système disponible par le OS. Ces appels sont généralement écrit en `C`, `C++`. Pour les appels aux composants matériel directement, le langage utilisé est en assembleur.
+Les types des appels du système sont
+1. contrôle de processus
+    ```c
+    fork()
+    exit()
+    wait()
+    ```
+2. manipulation des fichiers
+    ```c
+    open()
+    read()
+    write()
+    close()
+    ```
+3. manipulation des devices
+    ```c
+    ioctl()
+    read()
+    write()
+    ```
+4. maintenance de l'information
+    ```c
+    getpid()
+    alarm()
+    sleep()
+    ```
+5. communications
+    ```c
+    pipe()
+    shm_open()
+    nmap()
+    ```
+6. protection
+    ```c
+    chmod()
+    umask()
+    chown()
+    ```
+
+### Section 13.2.2
+#### Interruptions
+Lorsque le cpu détecte un signal du contrôleur dans la ligne des requête d'interruption, le cpu performe l'état `save` et `jump` à l'`interrupt-handler-routine` dans un espace mémoire fixe.
+
+##### Scrutement (polling)
 |Fonctionnement|Avantage|Inconvénients|
 |---|---|---|
 |Aller vérifier l'état des périphériques (s'ils ont des requêtes?, terminé?) de temps en temps| Simple | 1. Prends du temps de la CPU même s'il n'y a pas de requêtes 2. Quand faire le polling? Difficile à prédire.|
 
-
-#### Interruption
+##### Interruption
 |Fonctionnement|
 |---|
 |Chaque périphérique peut envoyer un signal à la CPU pour indiquer un évènement (requête)|
@@ -34,27 +99,40 @@ rapidement?
 Réservé pour les évènements du type non récupérable.
 ##### Interruption masquable
 Il peut être désactivé par le CPU avant l'exécution d'une instruction critique afin de désactiver l'interruption. Utilisé principalement dans les contrôleurs de requête de service.
-### Interface utilisateur
-#### Interface utilisateur en ligne de comande (CLI)
-Utilise des commandes en texte et une méthode d'entrée
-#### Interface en batch
-Des commandes sont préconfiguré dans un fichier spécifique et ce fichier est appelé.
-#### Interface graphique de l'utilisateur (GUI)
-Une interface sous forme de fenêtre habituellement avec un pointeur(souris) pour diriger les entrées et les sorties.
+</br></br>
+Exemple
+```c
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/time.h>
 
-### Programme d'exécution
-Un système doit être en mesure de charger un programme dans la mémoire et rouler ce programme. Doit aussi être apte à arrêter l'exécution normalement ou anormalement avec une indication d'erreur.
+void gestionnaire_timer (int signum)
+{
+  static int count = 0;
+  printf ("timer a expire %d fois\n", ++count);
+}
 
-### Interpréteur de commandes
-Un exemple d'un interpréteur est `shells` dans des systèmes UNIX et Linux. La fonction principale d'un interpréteur est l'exécution de la prochaine commande spécifié par l'usager. Plusieur de ces fonctions est la manipulation des fichiers tels que la création, destruction des fichiers. L'interpréteur détient à lui un répertoire dans laquel il cherche les commandes pour l'exécution des tâches. Une alternative est de chercher l'implémentation des commandes requis dans les fichiers des programme du systèmes.
-
-### Appels du système
-Fourni une interface au système disponible par le OS. Ces appels sont généralement écrit en `C`, `C++`. Pour les appels aux composants matériel directement, le langage utilisé est en assembleur.
-
-### Loi de Kernighan
+int main ()
+{
+  struct sigaction sa; struct itimerval timer;
+  // Instale le gestionnaire du signal SIGVTALRM.
+  memset (&sa, 0, sizeof (sa));
+  sa.sa_handler = &gestionnaire_timer;
+  sigaction (SIGVTALRM, &sa, NULL);
+  // Configurer le timer pour expirer apres 250 msec timer.it_value.tv_sec = 0;
+  timer.it_value.tv_usec = 250000;
+  // ... et a chaque 250 msec apres.
+  timer.it_interval.tv_sec = 0;
+  timer.it_interval.tv_usec = 250000;
+  // Demarrer le timer. .
+  setitimer (ITIMER_VIRTUAL, &timer, NULL);
+  // Simule un certain calcul ...
+  while (1);
+}
+```
+#### Loi de Kernighan
 Debugging est doublement plus difficile que d'écrire le code. Cependant, si tu écris du code intelligemment, tu es par définition, pas assez intelligent pour le debug.
-
-
 
 ## Cours 2
 ### Exercice
